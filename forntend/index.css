@@ -469,7 +469,7 @@ body{
   }
   .mandatory-members-container {
     height: 85px; /* Total height fixed */
-    width: 785px;
+    width: 700px;
     overflow-y: auto; /* Enables vertical scrolling */
     overflow-x: hidden; /* Prevents horizontal scrolling */
     padding-right: 10px; /* Prevents scrollbar from overlapping content */
@@ -484,7 +484,7 @@ body{
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
-    width: 785px;
+    width: 700px;
     height: 45px;
     margin-bottom: 0;
     transition: all 0.2s ease;
@@ -703,3 +703,76 @@ body{
         border-radius: 12px;
         font-size: 12px;
     }
+    /* Parent grid adjustments */
+.parent {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr); /* More columns for finer control */
+  grid-template-rows: auto; /* Adjust row size based on content */
+  gap: 20px;
+  padding: 20px;
+}
+
+.div1, .div2, .div4 {
+  background-color: #0f1f34;
+  color: white;
+  padding: 20px; /* Consistent padding */
+}
+
+/* Improved column span for better layout */
+.div1 { grid-column: span 3; }
+.div2 { grid-column: span 6; }
+.div4 { grid-column: span 3; }
+
+/* Input styling to prevent overflow */
+.input-box {
+  width: 100%; /* Full width of the container */
+  padding: 8px 12px;
+  margin: 5px 0; /* Add some margin for spacing */
+  border: 1px solid #ccc; /* Subtle border */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .parent {
+      grid-template-columns: 1fr; /* Stack on small screens */
+  }
+
+  .div1, .div2, .div4 {
+      grid-column: 1 / -1; /* Full width */
+  }
+}
+
+/* Additional media queries for other elements as needed */
+.input-box, .input-box select, .input-box input[type="text"], .input-box input[type="date"] {
+  width: 100%;  /* This ensures the input does not overflow */
+  box-sizing: border-box; /* Includes padding and border in the element's width */
+}
+
+.expertise-row, .mandatory-row {
+  display: flex;
+  gap: 8px; /* Ensures spacing between elements */
+  align-items: center; /* Aligns items vertically */
+}
+
+.input-group {
+  margin-bottom: 10px;
+}
+
+.add-btn, .remove-btn {
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+#assigned {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+#assigned div {
+  margin-bottom: 15px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #172952;
+  color: #ffffff;
+}

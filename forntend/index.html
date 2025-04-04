@@ -73,40 +73,33 @@
         
             <div class="section">
                 <h3>Task Details</h3>
+              
                 <div class="input-group">
-                    <label>Task Name</label>
-                    <input type="text" class="input-box full" >
+                  <label>Task Name</label>
+                  <input type="text" id="task-name" class="input-box full">
                 </div>
+              
                 <div class="input-group">
-                    <label>Task Details</label>
-                    <input type="text" class="input-box full" >
+                  <label>Task Details</label>
+                  <input type="text" id="task-details" class="input-box full">
                 </div>
-
-                <div class="output-container">
-                    <label class="output-label">Task Analysis Output</label>
-                    <div class="output-box" id="task-output">
-                      
-                    </div>
-                  </div>
-                
-            
-        
-                  <div class="input-group">
-                    <label>Priority Level</label>
-                    <select class="input-box">
-                        
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                    </select>
-                    
-                        <label>Due Date</label>
-                        <input type="date" id="due-date" class="input-box">
-                    </div>
+              
+                <div class="input-group">
+                  <label>Priority Level</label>
+                  <select id="priority-level" class="input-box">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                  </select>
+              
+                  <label>Due Date</label>
+                  <input type="date" id="due-date" class="input-box">
+                </div>
+              
                 <!-- Optimize Matches Button -->
                 <button id="submit-btn">Optimize Matches</button>
-        
-            </div>
+              </div>
+              
         </div>
     
         <!-- Assigned Section -->

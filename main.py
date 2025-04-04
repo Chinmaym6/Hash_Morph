@@ -1,27 +1,47 @@
 import json
-import re
 from datetime import datetime
 from decimal import Decimal
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uvicorn
+
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage, UserMessage
 from azure.core.credentials import AzureKeyCredential
 
-from database import get_employees_by_expertise_list, update_employees_after_assignment, refresh_employee_statuses
-from task_allocator import assign_tasks_with_constraints, update_score_weights
-from expertise_mapping import EXPERTISE_MAPPING  # Import external mapping
+from database import (
+    get_employees_by_expertise_list,
+    update_employees_after_assignment,
+    refresh_employee_statuses
+)
+from task_allocator import assign_tasks_with_constraints
+from expertise_mapping import EXPERTISE_MAPPING
 
-# Set use_deepseek to True to use the AI chatbot extraction.
+# Azure DeepSeek Configuration
 use_deepseek = True
-
-# Azure DeepSeek R1 settings (only used in chatbot mode)
 endpoint = "https://aitaskallocati6442223044.services.ai.azure.com/models"
 model_name = "DeepSeek-R1"
 api_key = "BmGzYShLgRJSPmNEkURPbcitlLzHqdFhPZl4iioIySQo7yB0ilMLJQQJ99BDACHYHv6XJ3w3AAAAACOGSctC"
 
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:3000", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class ProjectInput(BaseModel):
+    project_name: str
+    priority: str
+    due_date: str  # YYYY-MM-DD
+    description: str
+    useAI: bool = True
+
 def extract_json_array(text: str) -> str:
-    """
-    Extracts the first complete JSON array from the input text using a simple stack-based approach.
-    """
     start = text.find('[')
     if start == -1:
         return None
@@ -43,84 +63,61 @@ def get_project_requirements_from_deepseek(prompt: str) -> list:
     system_msg = SystemMessage(content=(
         "You are a strict JSON extractor. Given a NEW and unique project problem statement, "
         "you must output a **new** valid JSON array every time. Each item should include "
-        "'expertise' (string), 'count' (integer) and optionally 'mandatory' (list of employee names). "
+        "'expertise' (string) and 'count' (integer). "
         "Only use expertise names from this list: " + ", ".join(sorted(set(EXPERTISE_MAPPING.values()))) + ". "
         "Do not reuse previous output. Do not explain. Return JSON only. If input is invalid, return []."
     ))
     response = client.complete(
-        messages=[
-            system_msg,
-            UserMessage(content=prompt)
-        ],
+        messages=[system_msg, UserMessage(content=prompt)],
         max_tokens=2000,
         model=model_name
     )
     client.close()
-    
+
     full_response = response.choices[0].message.content.strip()
-    print("📝 Prompt sent to model:", prompt)
-    print("📩 Full model response:\n", full_response)
 
     if full_response.startswith('[') and full_response.endswith(']'):
         try:
             return json.loads(full_response)
-        except json.JSONDecodeError as e:
-            print("Error decoding JSON:", e)
-    
+        except json.JSONDecodeError:
+            pass
+
     json_str = extract_json_array(full_response)
     if json_str:
         try:
             return json.loads(json_str)
-        except json.JSONDecodeError as e:
-            print("Error decoding JSON with extract_json_array:", e)
+        except json.JSONDecodeError:
+            pass
     return []
 
 def map_expertise(extracted_requirements: list) -> list:
-    mapped_requirements = []
-    for req in extracted_requirements:
-        exp = req.get("expertise", "").strip()
-        count = req.get("count", 1)
-        mandatory = req.get("mandatory", [])
-        mapped_requirements.append({
-            "expertise": EXPERTISE_MAPPING.get(exp, exp),
-            "count": count,
-            "mandatory": mandatory
-        })
-    return mapped_requirements
+    return [{
+        "expertise": EXPERTISE_MAPPING.get(req.get("expertise", "").strip(), req.get("expertise", "").strip()),
+        "count": req.get("count", 1)
+    } for req in extracted_requirements]
 
-def main():
-    frontend_priority = "high"
-    frontend_due_date = "2025-04-15"
-    frontend_project_name = "Automate Task Scheduling in Python"
-    frontend_project_description = (
-      "Manually managing repetitive tasks can be inefficient."
-      "This project aims to use APScheduler to schedule and automate tasks such as sending notifications, running scripts, or updating databases at predefined intervals."
-    )
-    # Manager may optionally provide mandatory employee names (which will be applied to any requirement if matching DB data)
-    manager_mandatory_names = ["Employee29", "Employee60"]  # Example names
+@app.post("/api/assign-project")
+def assign_project(project_input: ProjectInput):
+    frontend_priority = project_input.priority
+    frontend_due_date = project_input.due_date
+    frontend_project_name = project_input.project_name
+    frontend_project_description = project_input.description
 
-    # Manager-provided manual requirements fallback (if DeepSeek output is not acceptable)
     manager_manual_requirements = [
-        {"expertise": "frontend_dev", "count": 2, "mandatory": []},
-        {"expertise": "backend_dev", "count": 2, "mandatory": []},
-        {"expertise": "database_admin", "count": 1, "mandatory": []},
-        {"expertise": "design", "count": 1, "mandatory": []},
-        {"expertise": "security", "count": 1, "mandatory": []},
-        {"expertise": "project_management", "count": 1, "mandatory": []},
-        {"expertise": "qa_testing", "count": 1, "mandatory": []},
-        {"expertise": "cloud_infra", "count": 1, "mandatory": []},
-        {"expertise": "data_viz", "count": 1, "mandatory": []}
+        {"expertise": "frontend_dev", "count": 2},
+        {"expertise": "backend_dev", "count": 2},
+        {"expertise": "database_admin", "count": 1},
+        {"expertise": "design", "count": 1},
+        {"expertise": "security", "count": 1},
+        {"expertise": "project_management", "count": 1},
+        {"expertise": "qa_testing", "count": 1},
+        {"expertise": "cloud_infra", "count": 1},
+        {"expertise": "data_viz", "count": 1}
     ]
 
-    if use_deepseek:
+    if use_deepseek and project_input.useAI:
         extracted_requirements = get_project_requirements_from_deepseek(frontend_project_description)
-        # For a library management system, we expect expertise such as frontend_dev, backend_dev, design, etc.
-        desired_expertise = {"frontend_dev", "backend_dev", "database_admin", "design", "security", 
-                             "project_management", "qa_testing", "cloud_infra", "data_viz"}
-        # Check if at least one of the extracted expertise (after mapping) is among the desired ones.
-        if not any(EXPERTISE_MAPPING.get(req.get("expertise", "").strip(), req.get("expertise", "").strip()) in desired_expertise 
-                   for req in extracted_requirements):
-            print("⚠️ DeepSeek output does not match expected library-related expertise. Using manual fallback requirements.")
+        if not extracted_requirements:
             extracted_requirements = manager_manual_requirements
     else:
         extracted_requirements = manager_manual_requirements
@@ -130,11 +127,9 @@ def main():
     project_data = {
         "project_name": frontend_project_name,
         "priority": frontend_priority,
-        "due_date": frontend_due_date,
-        "requirements": mapped_requirements,
-        "mandatory_names": manager_mandatory_names
+        "due_date": datetime.strptime(frontend_due_date, "%Y-%m-%d"),
+        "requirements": mapped_requirements
     }
-    project_data["due_date"] = datetime.strptime(project_data["due_date"], "%Y-%m-%d")
 
     refresh_employee_statuses()
 
@@ -147,17 +142,15 @@ def main():
 
     update_employees_after_assignment(assignments, project_data["due_date"].strftime("%Y-%m-%d"))
 
-    output = {
+    return {
         "project_data": {
             "project_name": project_data["project_name"],
             "priority": project_data["priority"],
             "due_date": project_data["due_date"].strftime("%Y-%m-%d"),
-            "requirements": mapped_requirements,
-            "mandatory_names": manager_mandatory_names
+            "requirements": mapped_requirements
         },
         "assignments": assignments
     }
-    print(json.dumps(output, indent=2, default=lambda o: float(o) if isinstance(o, Decimal) else str(o)))
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run("main:app", host="127.0.0.1", port=5000, reload=True)
