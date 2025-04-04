@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="index.js"></script>
+
+    
+<div class="parent">
+
+
+
+    <div class="div1">
+        <div class="header">AI Task Allocator</div>
+        
+         
+          <div class="menu">
+        
+                <button class="menu-item tab active"onclick="location.href='./index.html'">Dashboard</button>
+                <button class="menu-item" onclick="location.href='./project.html'">Projects</button>
+
+
+
+
+                <button class="menu-item" onclick="location.href='./team.html'">Team</button>
+                <button class="menu-item"onclick="location.href='./calendar.html'">Calendar</button>
+                
+            
+          </div>
+         
+    
+         <div class="donut_chart">
+           <div class="chart-txt">Analytics</div>
+           
+            <canvas id="taskCompletionChart"></canvas>
+            <div class="chart-text">Task Completion</div>
+    
+         </div>
+
+    
+         <div class="status">
+            <h2>Team Status</h2>
+            <ul>
+                <li><span class="dot available"></span> Available <span id="available">0</span> </li>
+                <li><span class="dot assigned"></span> Assigned <span id="assigned">0</span> </li>
+                <li><span class="dot leave"></span> Leave <span id="leave">0</span> </li>
+                <li><span class="dot remote"></span> Remote <span id="remote">0</span> </li>
+            </ul>
+        </div>
+
+    </div>
+
+
+
+
+    <div class="div2">
+        <div class="header">Intelligent Task Matching</div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="matching">Matching</button>
+            <button class="tab" data-tab="assigned">Assigned</button>
+            <button class="tab" data-tab="completed">Completed</button>
+        </div>
+        
+    
+        <!-- Matching Section -->
+        <div id="matching" class="tab-content active">
+        
+            <div class="section">
+                <h3>Task Details</h3>
+                <div class="input-group">
+                    <label>Task Name</label>
+                    <input type="text" class="input-box full" >
+                </div>
+                <div class="input-group">
+                    <label>Task Details</label>
+                    <input type="text" class="input-box full" >
+                </div>
+
+                <div class="output-container">
+                    <label class="output-label">Task Analysis Output</label>
+                    <div class="output-box" id="task-output">
+                      
+                    </div>
+                  </div>
+                
+            
+        
+                  <div class="input-group">
+                    <label>Priority Level</label>
+                    <select class="input-box">
+                        
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                    
+                        <label>Due Date</label>
+                        <input type="date" id="due-date" class="input-box">
+                    </div>
+                <!-- Optimize Matches Button -->
+                <button id="submit-btn">Optimize Matches</button>
+        
+            </div>
+        </div>
+    
+        <!-- Assigned Section -->
+        <div id="assigned" class="tab-content ">
+            <h2>Assigned Tasks</h2>
+            
+        </div>
+    
+        <!-- Completed Section -->
+        <div id="completed" class="tab-content ">
+            <div class="section">
+                <h3>Task Details</h3>
+                <div class="input-group">
+                    <label>Task Name</label>
+                    <input type="text" class="input-box" >
+                </div>
+        
+                <div id="expertise-container">
+                    <!-- Initial Expertise & Members Row -->
+                    <div class="input-group expertise-row">
+                        <label>Expertise Required</label>
+                        <select class="input-box">
+                            <option value="AI/Machine Learning">AI/Machine Learning</option>
+                            <option value="Database">Database</option>
+                            <option value="Cloud">Cloud</option>
+                        </select>
+            
+                        <label>Members Required</label>
+                        <input type="text" class="input-box">
+                        
+                        <button class="remove-btn" onclick="removeRow(this)">✖</button>
+                    </div>
+                </div>
+            
+                <!-- Button to Add More Fields -->
+                <button id="add-expertise">➕ Add More</button>
+
+                <div class="mandatory-members-container">
+                    <label>Mandatory Members</label>
+                    <div class="mandatory-members-rows">
+                      <div class="mandatory-row">
+                        <div class="input-field-container">
+                          <input type="text" class="input-box" placeholder="Enter member name">
+                          <button class="remove-btn">✖</button>
+                        </div>
+                        <div class="input-field-container">
+                          <input type="text" class="input-box" placeholder="Enter member role">
+                          <button class="remove-btn">✖</button>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                <button id="add-mandatory">➕ Add More</button>
+
+
+
+                <div class="input-group">
+                <label>Priority Level</label>
+                <select class="input-box">
+                    
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+                
+                    <label>Due Date</label>
+                    <input type="date" id="due-date" class="input-box">
+                </div>
+        
+                <!-- Optimize Matches Button -->
+                <button id="submit-btn">Optimize Matches</button>
+        
+            </div>
+        </div>
+        
+    </div>
+
+
+    
+    <div class="div4">
+        <!-- Available Individuals Component -->
+        
+            
+                <div class="header">Employee Profile</div>
+           
+    
+            <div class="card-body p-3">
+                <!-- Filter Buttons -->
+                <div class="filter-tabs">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn filter-btn active">All</button>
+                        <button type="button" class="btn filter-btn">Available</button>
+                        <button type="button" class="btn filter-btn">Busy</button>
+                        <button type="button" class="btn filter-btn">On Leave</button>
+                    </div>
+                </div>
+    
+                <!-- Search Bar -->
+                <div class="search-container ">
+                    <div class="search-box">
+                        <i class="bi bi-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search individuals...">
+                    </div>
+                </div>
+    
+                <!-- Scrollable Team Members List -->
+                <div class="team-members-list">
+                    <div class="list-group">
+                        <!-- Example Members (Will be replaced dynamically) -->
+                        <div class="list-group-item team-member">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar bg-primary">A</div>
+                                <div class="member-info ms-3">
+                                    <div class="member-name">Anna</div>
+                                    <div class="member-role">Database Design</div>
+                                </div>
+                                <span class="ms-auto badge bg-info">Available</span>
+                            </div>
+                        </div>
+    
+                        <div class="list-group-item team-member">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar bg-purple">S</div>
+                                <div class="member-info ms-3">
+                                    <div class="member-name">Susan</div>
+                                    <div class="member-role">Database Design</div>
+                                </div>
+                                <span class="ms-auto badge bg-info">Available</span>
+                            </div>
+                        </div>
+    
+                        <div class="list-group-item team-member">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar bg-pink">M</div>
+                                <div class="member-info ms-3">
+                                    <div class="member-name">Mark</div>
+                                    <div class="member-role">Web Development</div>
+                                </div>
+                                <span class="ms-auto badge bg-purple">On Leave</span>
+                            </div>
+                        </div>
+    
+                        <div class="list-group-item team-member">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar bg-danger">D</div>
+                                <div class="member-info ms-3">
+                                    <div class="member-name">David</div>
+                                    <div class="member-role">Project Manager</div>
+                                </div>
+                                <span class="ms-auto badge bg-purple">On Leave</span>
+                            </div>
+                        </div>
+    
+                    </div>
+                </div>
+            </div>
+        
+    </div>
+
+
+
+    
+    
+</div>
+</body>
+</html>
