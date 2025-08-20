@@ -8,7 +8,7 @@ Automated Expertise Identification: Utilizes Azure DeepSeek to analyze task desc
 Fallback Mechanism: In cases where Azure DeepSeek does not provide complete or successful results, manual input is available to ensure no task goes unattended.
 
 Optimal Employee Matching:
-Scoring System: Employees are scored based on various attributes including:
+Scoring System: Employees are scored based on various attributes, including:
 Performance Rating
 
 Years of Experience
@@ -131,7 +131,7 @@ Step 4: Configure your PostgreSQL database.
 
 Create databases named Company_DB1 or as per configuration.
 
-Import provided employee dataset (employees.sql).
+Import the provided employee dataset (employees.sql).
 
 Step 5: Configure Azure API keys and endpoints in main.py.
 
@@ -242,6 +242,6 @@ Allows manual override by managers through interactive forms.
 
 Database Output:
 
-Employee records updated in real-time to reflect new assignments, workload increments, and updated availability.
+Employee records are updated in real-time to reflect new assignments, workload increments, and updated availability.
 
-Note:- The backend and frontend integration is not yest done so please kindly try to run only the backend codes main.py,task_allocator.py,database.py,expertise_map
+Note:- The backend and frontend integration is not yet done, so please kindly try to run only the backend code, main.py
